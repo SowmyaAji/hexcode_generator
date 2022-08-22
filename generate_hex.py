@@ -74,8 +74,6 @@ def validate_not_used(conn, random_string: str, hashed_string:str, list_limit:in
     c.execute("CREATE TABLE IF NOT EXISTS hexcodes (id int PRIMARY KEY, hexcode_hash char(65) NOT NULL)")
     c.execute("SELECT hexcode_hash FROM hexcodes")
     results = c.fetchall()
-    # for row in results:
-    #     print(row)
     if len(results) == list_limit: # if the first iteration of unique hexcodes are done drop the data base and restart the process of storing
         c.execute("DROP TABLE hexcodes")
         conn.commit()

@@ -13,13 +13,13 @@ class TestHexCodes(unittest.TestCase):
     def test_validate_common_false(self):
         self.assertFalse(validate_common("32E716BA"),f"It exists in common magic hexcodes used by industry")
         
-    def test_validate_sequences(self):
+    def test_validate_sequences_one(self):
         self.assertFalse(validate_sequences("12345678"), f"This does not contain a sequence")
         
-    def test_validate_sequences(self):
+    def test_validate_sequences_two(self):
         self.assertFalse(validate_sequences("AAAAAAAA"), f"This does not contain a sequence and is valid")
         
-    def test_validate_sequences(self):
+    def test_validate_sequences_three(self):
         self.assertTrue(validate_sequences("32E716BA"), f"This contains a sequence and is not valid")
         
     def test_generate_hashed_string(self):
