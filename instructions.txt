@@ -1,5 +1,4 @@
-We’d like you to write us a program that:
-Generates 8-digit hexadecimal codes to be used for 2FA.
+Generate 8-digit hexadecimal codes to be used for 2FA.
 
 
 The rules are as follows:
