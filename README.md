@@ -19,9 +19,9 @@ A hexcode generator in Python written with the following constraints:
 
 ## To use:
 
--- clone repo and cd into it
--- create venv or pipenv or pyenv or conda virtual env
--- pip install the two libraries mentioned above
--- run ```python generate_hex.py```
--- to test, run ```python tests.py```
+- clone repo and cd into it
+- create venv or pipenv or pyenv or conda virtual env
+- pip install the two libraries mentioned above
+- run ```python generate_hex.py```
+- to test, run ```python tests.py```
 
