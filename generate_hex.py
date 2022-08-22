@@ -1,7 +1,7 @@
 from scraper import get_common_codes
 import secrets
 import hashlib
-import sqlite3
+from db import connect_to_db, select_column, drop_table, insert_into_db
 
 def get_hex():
     """
@@ -51,11 +51,8 @@ def generate_hashed_string(random_string: str) -> str:
     """
     
     return hashlib.sha256(random_string.encode('utf-8')).hexdigest()  # uses hashing to store the hex code generated and compares the hex with the ones in the db column
-
-def connect_to_db():
-    return sqlite3.connect("hexcodes.db")
     
-def validate_not_used(conn, random_string: str, hashed_string:str, list_limit:int = 4294967296) -> str: # using 4294967296 as default value for maximum number of combinations of the 8-digit hexcode (16**8 = 4294967296). When that many values are stored in the hexcodes list, one interation of all unique hexcodes are done and can be restarted.
+def validate_not_used(conn, random_string: str, hashed_string:str, results: list, c, list_limit:int = 4294967296) -> str: # using 4294967296 as default value for maximum number of combinations of the 8-digit hexcode (16**8 = 4294967296). When that many values are stored in the hexcodes list, one interation of all unique hexcodes are done and can be restarted.
     """
     It takes a the hexcode string, hashes it and stores it in a database. If the hash is already in the database, it means the hexcode has been used before and the function returns nothing. If the hash is not in the database, it means the hexcode has not been used before and the function
     returns the hexcode
@@ -68,33 +65,28 @@ def validate_not_used(conn, random_string: str, hashed_string:str, list_limit:in
     :type list_limit: int (optional)
     :return: a random string of 8 hexadecimal characters.
     """
-
+    
     #  store hex string in db
-    c = conn.cursor()
-    c.execute("CREATE TABLE IF NOT EXISTS hexcodes (id int PRIMARY KEY, hexcode_hash char(65) NOT NULL)")
-    c.execute("SELECT hexcode_hash FROM hexcodes")
-    results = c.fetchall()
-    if len(results) == list_limit: # if the first iteration of unique hexcodes are done drop the data base and restart the process of storing
-        c.execute("DROP TABLE hexcodes")
-        conn.commit()
-        print("All valid hexcodes exhausted, restarting ...")
+  
+    if len(results) >= list_limit: # if the first iteration of unique hexcodes are done drop the data base and restart the process of storing
+        drop_table(conn, c)
+        random_string =  "All valid hexcodes exhausted, restarting ..."
     else:
-        hashes = []
-        for row in results:
-            hashes.append(row[0])
-        if hashed_string in hashes:
-            print("Hex code already used earlier")
+        res = list(filter(lambda row: hashed_string in row[0], results)) # check if hashcode is in results
+        if res: 
+            random_string = "Hex code already used earlier"
         else:
-            c.execute("INSERT INTO hexcodes (hexcode_hash) VALUES (?)",(hashed_string, ))
-            conn.commit()
-            return random_string   
+            insert_into_db(conn, c, hashed_string)
     conn.close()
+    return random_string
+
         
 def main():
     new_hex = get_hex()
     hashed_string = generate_hashed_string(new_hex)
     conn = connect_to_db()
-    check_hex = validate_not_used(conn, new_hex, hashed_string)
+    results, c = select_column(conn)
+    check_hex = validate_not_used(conn, new_hex, hashed_string, results, c)
     if check_hex :
         if not validate_common(check_hex) and validate_sequences(check_hex):
             print("New Hex code: ", check_hex)
